@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PH SF GTM Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        sfblue: '#0176D3',
+                        sfnavy: '#032D60',
+                        sfcloud: '#F3F3F3',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F9FB; }
+        
+        /* Smooth transitions */
+        .progress-bar-transition { transition: width 0.5s ease-in-out, background-color 0.3s ease; }
+        .modal-transition { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .view-transition { animation: fadeIn 0.4s ease-out forwards; }
+        
+        /* Hide scrollbar for cleaner look */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Print Styles for Report Extraction */
+        @media print {
+            body { background-color: white; }
+            nav, main, #profile-modal, .no-print { display: none !important; }
+            aside { 
+                width: 100% !important; 
+                border: none !important; 
+                box-shadow: none !important; 
+                position: absolute;
+                top: 0; left: 0;
+            }
+            .print-header { display: block !important; margin-bottom: 20px; font-size: 24px; font-weight: bold; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
+
+    <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 z-10 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-sfblue text-white p-2 rounded-lg shadow-inner">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+            <h1 class="text-xl font-bold text-sfnavy tracking-tight">PH SF <span class="text-sfblue">GTM Hub</span></h1>
+        </div>
+        <div class="hidden md:flex gap-4 lg:gap-6 items-center text-sm font-medium text-slate-500 overflow-x-auto no-scrollbar max-w-3xl">
+            <button id="tab-dashboard" onclick="switchTab('dashboard')" class="nav-tab text-sfblue border-b-2 border-sfblue pb-1 transition-colors hover:text-sfblue whitespace-nowrap">Dashboard</button>
+            <button id="tab-ai" onclick="switchTab('ai')" class="nav-tab border-b-2 border-transparent pb-1 hover:text-sfblue transition-colors whitespace-nowrap">AI & Agentforce</button>
+            <button id="tab-assets" onclick="switchTab('assets')" class="nav-tab border-b-2 border-transparent pb-1 hover:text-sfblue transition-colors whitespace-nowrap">Asset Library</button>
+            <button id="tab-qa" onclick="switchTab('qa')" class="nav-tab border-b-2 border-transparent pb-1 hover:text-sfblue transition-colors whitespace-nowrap">QA & Testing</button>
+            <button id="tab-certs" onclick="switchTab('certs')" class="nav-tab border-b-2 border-transparent pb-1 hover:text-sfblue transition-colors whitespace-nowrap">Certifications</button>
+            <button id="tab-devops" onclick="switchTab('devops')" class="nav-tab border-b-2 border-transparent pb-1 hover:text-sfblue transition-colors whitespace-nowrap">DevOps & Migrations</button>
+            <button id="tab-mentorship" onclick="switchTab('mentorship')" class="nav-tab border-b-2 border-transparent pb-1 hover:text-sfblue transition-colors whitespace-nowrap">Mentorship</button>
+        </div>
+        
+        <!-- Clickable Profile Trigger -->
+        <button onclick="toggleModal('profile-modal')" class="flex items-center gap-4 hover:bg-slate-50 p-2 rounded-lg transition-colors cursor-pointer group text-left border border-transparent hover:border-slate-200">
+            <div class="hidden sm:block text-right">
+                <div class="text-sm font-bold text-slate-800 group-hover:text-sfblue transition-colors">Alex Developer</div>
+                <div class="text-xs text-slate-500">Senior Technical Lead</div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-sfnavy to-sfblue shadow-md flex items-center justify-center font-bold text-white relative">
+                AD
+                <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+            </div>
+        </button>
+    </nav>
+
+    <div id="profile-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center modal-transition opacity-0 pointer-events-none">
+        <div class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto transform transition-transform scale-95 duration-300 relative">
+            
+            <button onclick="toggleModal('profile-modal')" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-full transition-colors z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <div class="flex flex-col md:flex-row">
+                <div class="bg-slate-50 p-8 border-r border-slate-200 md:w-1/3 flex flex-col items-center text-center">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-sfblue to-cyan-400 p-1 mb-4 shadow-lg">
+                        <div class="w-full h-full bg-white rounded-full flex items-center justify-center text-3xl font-bold text-sfnavy">AD</div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-1">Alex Developer</h2>
+                    <p class="text-sm font-medium text-sfblue mb-4">Senior Technical Lead</p>
+                    
+                    <div class="w-full bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-left mb-4">
+                        <p class="text-xs text-slate-500 mb-1">Trailhead Rank</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🐻</span>
+                            <span class="font-bold text-slate-800">Ranger</span>
+                            <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full ml-auto border border-amber-200">120 Badges</span>
+                        </div>
+                    </div>
+
+                    <div class="w-full text-left space-y-3 mt-2 border-t border-slate-200 pt-4">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">People Manager / Coach</p>
+                            <p class="text-sm font-medium text-slate-800 flex items-center gap-2 bg-white border border-slate-100 p-2 rounded-lg">
+                                <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">JD</span>
+                                Jane Doe (Director)
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">Location</p>
+                            <p class="text-sm font-medium text-slate-800">BGC, Taguig (Hybrid)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 md:w-2/3 bg-white">
+                    <h3 class="text-xl font-bold text-slate-800 mb-6 border-b border-slate-100 pb-2">Developer Passport</h3>
+                    
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="col-span-2">
+                            <h4 class="text-sm font-bold text-slate-600 mb-3 flex justify-between items-center">
+                                Salesforce Certifications (5)
+                                <a href="#" class="text-xs text-sfblue font-medium hover:underline">Link Webassessor</a>
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800 shadow-sm"><svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0 1 1 0 012 0zm-1-3a1 1 0 00-1 1v2a1 1 0 102 0v-2a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Admin</span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800 shadow-sm"><svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0 1 1 0 012 0zm-1-3a1 1 0 00-1 1v2a1 1 0 102 0v-2a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Platform Dev I</span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800 shadow-sm"><svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0 1 1 0 012 0zm-1-3a1 1 0 00-1 1v2a1 1 0 102 0v-2a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> Platform Dev II</span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-800 shadow-sm"><svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm1 11a1 1 0 11-2 0 1 1 0 012 0zm-1-3a1 1 0 00-1 1v2a1 1 0 102 0v-2a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg> App Builder</span>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-xs font-semibold text-purple-800 shadow-sm"><svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path></svg> AI Associate</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-600 mb-3">Core Technical Skills</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs rounded font-medium">Apex & LWC</span>
+                                <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs rounded font-medium">Data Cloud</span>
+                                <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs rounded font-medium">REST/SOAP APIs</span>
+                                <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-xs rounded font-medium">Agentforce Prompts</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-600 mb-3">Current Project Allocation</h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center justify-between text-sm bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]"></div> Liberty</span>
+                                    <span class="font-bold text-slate-800">60%</span>
+                                </li>
+                                <li class="flex items-center justify-between text-sm bg-slate-50 p-2 rounded border border-slate-100">
+                                    <span class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_5px_#3b82f6]"></div> NUS Track 3</span>
+                                    <span class="font-bold text-slate-800">40%</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-slate-50 to-sfcloud rounded-xl p-5 border border-slate-200 shadow-inner">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-sm font-bold text-slate-800">Weekly Utilization Target</h4>
+                            <span class="text-xs font-bold px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full shadow-sm" id="profile-status">On Track</span>
+                        </div>
+                        <div class="flex items-end gap-2 mb-3">
+                            <span class="text-3xl font-black text-sfnavy" id="profile-hours">32.0</span>
+                            <span class="text-sm font-medium text-slate-500 mb-1">/ 40.0 hrs</span>
+                        </div>
+                        <div class="h-2.5 w-full bg-slate-200 rounded-full overflow-hidden border inset-shadow-sm">
+                            <div id="profile-progress" class="h-full bg-gradient-to-r from-sfblue to-cyan-400 w-[80%] rounded-full progress-bar-transition"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+        
+        <main class="flex-1 overflow-y-auto p-6 lg:p-8 no-scrollbar pb-24 relative">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view-section view-transition">
+                <div class="bg-sfnavy rounded-2xl p-8 text-white mb-8 shadow-xl relative overflow-hidden border border-blue-900">
+                    <div class="relative z-10 w-full lg:w-2/3">
+                        <h2 class="text-3xl font-extrabold mb-3 tracking-tight">Welcome to the GTM Delivery Hub</h2>
+                        <p class="text-blue-100 text-lg leading-relaxed mb-6 font-light">Your centralized portal for development best practices, AI usage guidelines, and reusable assets. Elevating the standard of our Salesforce delivery across the Philippines team.</p>
+                        <div class="flex gap-4">
+                            <button onclick="switchTab('assets')" class="bg-sfblue hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg font-semibold transition-colors shadow-lg border border-blue-400">
+                                Browse Asset Library
+                            </button>
+                            <button class="bg-white/10 hover:bg-white/20 text-white border border-white/30 px-5 py-2.5 rounded-lg font-medium transition-colors backdrop-blur-md">
+                                View Announcements
+                            </button>
+                        </div>
+                    </div>
+                    <div class="absolute right-0 top-0 w-80 h-80 bg-blue-500 rounded-full mix-blend-screen filter blur-[80px] opacity-40 transform translate-x-1/3 -translate-y-1/4"></div>
+                    <div class="absolute right-32 bottom-0 w-64 h-64 bg-cyan-400 rounded-full mix-blend-screen filter blur-[80px] opacity-30"></div>
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-extrabold text-slate-800 tracking-tight">GTM Practices & Pillars</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div onclick="switchTab('ai')" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 transition-all cursor-pointer group">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">AI & Agentforce Guidelines</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed">Corporate protocols for prompt engineering, predictive models, and AppExchange AI integration limits.</p>
+                    </div>
+
+                    <div onclick="switchTab('assets')" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer group">
+                        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Asset & Code Library</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed">Repository of pre-approved Unmanaged Packages, LWC structural patterns, and common utility classes.</p>
+                    </div>
+
+                    <div onclick="switchTab('qa')" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-emerald-300 transition-all cursor-pointer group">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">QA Capability Library</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed">Standardized test scripts, Playwright templates, UAT validation playbooks, and coverage rules.</p>
+                    </div>
+
+                    <div onclick="switchTab('certs')" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group">
+                        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Certifications Practice</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed">Track your progress, view the PH team skills matrix, and access certification study guides.</p>
+                    </div>
+                    
+                    <div onclick="switchTab('devops')" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-rose-300 transition-all cursor-pointer group">
+                        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">DevOps & Migrations</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed">Step-by-step guides for handling massive data migrations, CPQ complex deployments, and CI/CD operations.</p>
+                    </div>
+
+                    <div onclick="switchTab('mentorship')" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group">
+                        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors shadow-sm">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Mentorship Program</h4>
+                        <p class="text-sm text-slate-500 leading-relaxed">Connect with Principal Architects, book 1:1 code review sessions, and join peer-programming pods.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-ai" class="view-section hidden view-transition">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-indigo-100 p-2 rounded text-indigo-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-800">AI & Agentforce Hub</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                        <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-3 mb-4">Enterprise AI Standards & ChatPwC Guidelines</h3>
+                        <p class="text-sm text-slate-600 mb-4 leading-relaxed">Before deploying generative models or utilizing internal LLMs like <strong>ChatPwC</strong>, you must adhere strictly to the PH GTM data masking mandates. Client data, PII, and proprietary architecture MUST be scrubbed before hitting any AI gateway.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
+                                <h4 class="text-sm font-bold text-green-800 mb-1 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ChatPwC Approved Uses</h4>
+                                <ul class="text-xs text-green-700 list-disc list-inside space-y-1 mt-2">
+                                    <li>Generating Apex test class scaffolding</li>
+                                    <li>Explaining complex code blocks or LWC concepts</li>
+                                    <li>Drafting technical documentation (no client names)</li>
+                                    <li>Regex pattern creation and validation</li>
+                                </ul>
+                            </div>
+                            <div class="bg-red-50 border border-red-200 p-4 rounded-lg">
+                                <h4 class="text-sm font-bold text-red-800 mb-1 flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> Strictly Prohibited</h4>
+                                <ul class="text-xs text-red-700 list-disc list-inside space-y-1 mt-2">
+                                    <li>Pasting raw client data or unmasked SOQL results</li>
+                                    <li>Uploading proprietary client architecture diagrams</li>
+                                    <li>Using non-approved public LLMs (e.g., ChatGPT)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                            <h4 class="text-sm font-bold text-amber-800">Mandatory Review Gate</h4>
+                            <p class="text-xs text-amber-700 mt-1">All Prompt Builder templates passing object data MUST be approved by the Security Architecture board prior to UAT deployment.</p>
+                        </div>
+                    </div>
+                    <div class="bg-indigo-50 rounded-xl border border-indigo-100 p-6 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
+                            <span class="text-2xl">🤖</span>
+                        </div>
+                        <h3 class="font-bold text-indigo-900 mb-1">Agentforce Bootcamp</h3>
+                        <p class="text-xs text-indigo-700 mb-4">Learn how to build custom actions and reasoning engines.</p>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg w-full transition-colors">Launch Trailmix</button>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Approved Prompt Library</h3>
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                <th class="px-6 py-3 font-semibold">Prompt Name</th>
+                                <th class="px-6 py-3 font-semibold">Cloud</th>
+                                <th class="px-6 py-3 font-semibold">Use Case</th>
+                                <th class="px-6 py-3 font-semibold text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">Executive Summary Generator</td>
+                                <td class="px-6 py-4 text-slate-600">Sales Cloud</td>
+                                <td class="px-6 py-4 text-slate-500">Summarizes related Oppty history and open Cases for Account prep.</td>
+                                <td class="px-6 py-4 text-right"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold">Production</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">Case Resolution Drafter</td>
+                                <td class="px-6 py-4 text-slate-600">Service Cloud</td>
+                                <td class="px-6 py-4 text-slate-500">Drafts customer email based on Knowledge Article vectors.</td>
+                                <td class="px-6 py-4 text-right"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-md text-xs font-bold">Production</span></td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-slate-800">Quote Discount Negotiator</td>
+                                <td class="px-6 py-4 text-slate-600">CPQ</td>
+                                <td class="px-6 py-4 text-slate-500">Analyzes margin and suggests discount thresholds via Copilot.</td>
+                                <td class="px-6 py-4 text-right"><span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-bold">Pilot</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-assets" class="view-section hidden view-transition">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-blue-100 p-2 rounded text-blue-700">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-slate-800">Reusable Asset Library</h2>
+                    </div>
+                    
+                    <div class="relative">
+                        <input type="text" placeholder="Search components, flows..." class="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-sfblue focus:border-transparent outline-none w-64 shadow-sm">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+                    <button class="px-4 py-1.5 bg-sfnavy text-white text-sm font-medium rounded-full shadow-sm whitespace-nowrap">All Assets</button>
+                    <button class="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-full transition-colors whitespace-nowrap">Lightning Web Components</button>
+                    <button class="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-full transition-colors whitespace-nowrap">Apex Frameworks</button>
+                    <button class="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-full transition-colors whitespace-nowrap">Flow Templates</button>
+                </div>
+
+                <!-- Asset Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Asset 1 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded">LWC</span>
+                            <span class="text-xs text-slate-400 font-medium">v2.4.1</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Dynamic Datatable with Inline Edit</h4>
+                        <p class="text-sm text-slate-500 mb-4 flex-1">A highly customizable datatable wrapper supporting complex relationships, inline editing with custom validations, and server-side pagination.</p>
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 text-[10px] font-bold flex items-center justify-center text-slate-600">JP</div>
+                                <span class="text-xs text-slate-500 font-medium">J. Perez</span>
+                            </div>
+                            <button class="text-sfblue hover:text-blue-800 text-sm font-bold flex items-center gap-1">
+                                Get Package <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Asset 2 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded">Apex</span>
+                            <span class="text-xs text-slate-400 font-medium">v4.0.0</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Enterprise Trigger Framework</h4>
+                        <p class="text-sm text-slate-500 mb-4 flex-1">Standardized trigger handler pattern providing bypass mechanisms, bulkification enforcement, and centralized error logging to Custom Objects.</p>
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 text-[10px] font-bold flex items-center justify-center text-slate-600">AD</div>
+                                <span class="text-xs text-slate-500 font-medium">A. Developer</span>
+                            </div>
+                            <button class="text-sfblue hover:text-blue-800 text-sm font-bold flex items-center gap-1">
+                                Get Code <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Asset 3 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded">Flow</span>
+                            <span class="text-xs text-slate-400 font-medium">v1.1.0</span>
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 mb-2">Lead Assignment Round Robin</h4>
+                        <p class="text-sm text-slate-500 mb-4 flex-1">Configurable flow template for assigning leads across regional queues based on active status and daily load balancing limits.</p>
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 text-[10px] font-bold flex items-center justify-center text-slate-600">MC</div>
+                                <span class="text-xs text-slate-500 font-medium">M. Cruz</span>
+                            </div>
+                            <button class="text-sfblue hover:text-blue-800 text-sm font-bold flex items-center gap-1">
+                                Get Template <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-qa" class="view-section hidden view-transition">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-emerald-100 p-2 rounded text-emerald-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-800">QA & Testing Capability</h2>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">Mandatory Quality Gates (CI/CD)</h3>
+                    <p class="text-sm text-slate-600 mb-6">All metadata deployments to staging/UAT environments must automatically pass the following checks in our Copado/Gearset pipelines.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 border border-slate-100 rounded-lg bg-slate-50">
+                            <div class="font-bold text-2xl text-emerald-600 mb-1">85%</div>
+                            <div class="text-sm font-semibold text-slate-800">Apex Code Coverage</div>
+                            <div class="text-xs text-slate-500 mt-1">Strictly enforced. PMD scan must show 0 critical violations.</div>
+                        </div>
+                        <div class="p-4 border border-slate-100 rounded-lg bg-slate-50">
+                            <div class="font-bold text-2xl text-sfblue mb-1">Pass</div>
+                            <div class="text-sm font-semibold text-slate-800">Jest LWC Tests</div>
+                            <div class="text-xs text-slate-500 mt-1">All client-side logic must have isolated unit tests passing.</div>
+                        </div>
+                        <div class="p-4 border border-slate-100 rounded-lg bg-slate-50">
+                            <div class="font-bold text-2xl text-purple-600 mb-1">Automated</div>
+                            <div class="text-sm font-semibold text-slate-800">Regression Suite</div>
+                            <div class="text-xs text-slate-500 mt-1">Playwright E2E scripts execute against primary user journeys.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Automation Tooling</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl flex gap-4 hover:border-emerald-300 transition-colors">
+                        <div class="shrink-0 w-12 h-12 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">Playwright E2E Templates</h4>
+                            <p class="text-sm text-slate-500 mt-1 mb-2">Pre-configured Node.js templates for testing Lightning UI interfaces reliably, bypassing shadow DOM issues.</p>
+                            <a href="#" class="text-sm font-semibold text-sfblue hover:underline">View Repository Git</a>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl flex gap-4 hover:border-emerald-300 transition-colors">
+                        <div class="shrink-0 w-12 h-12 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">Mock Data Generators</h4>
+                            <p class="text-sm text-slate-500 mt-1 mb-2">Scripts to seed sandboxes with obfuscated, production-like data volumes for accurate performance testing.</p>
+                            <a href="#" class="text-sm font-semibold text-sfblue hover:underline">Download Script</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: CERTIFICATIONS -->
+            <div id="view-certs" class="view-section hidden view-transition">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-amber-100 p-2 rounded text-amber-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-800">Certifications & Practice Hub</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Study Guides -->
+                    <div class="lg:col-span-2">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Official Study Guides & Mocks</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white hover:border-amber-300 transition-colors shadow-sm">
+                                <h4 class="font-bold text-slate-800 mb-1">Platform Developer I</h4>
+                                <p class="text-xs text-slate-500 mb-3">Updated for Winter '24. Includes 60+ mock questions on SOQL and Apex triggers.</p>
+                                <a href="#" class="text-sm font-semibold text-sfblue">Access Deck &rarr;</a>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white hover:border-amber-300 transition-colors shadow-sm">
+                                <h4 class="font-bold text-slate-800 mb-1">Data Cloud Consultant</h4>
+                                <p class="text-xs text-slate-500 mb-3">High demand! Covers Data Spaces, Identity Resolution, and Calculated Insights.</p>
+                                <a href="#" class="text-sm font-semibold text-sfblue">Access Deck &rarr;</a>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white hover:border-amber-300 transition-colors shadow-sm">
+                                <h4 class="font-bold text-slate-800 mb-1">AI Associate</h4>
+                                <p class="text-xs text-slate-500 mb-3">Foundational concepts on Generative AI, Ethics, and CRM Analytics.</p>
+                                <a href="#" class="text-sm font-semibold text-sfblue">Access Deck &rarr;</a>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-4 bg-white hover:border-amber-300 transition-colors shadow-sm">
+                                <h4 class="font-bold text-slate-800 mb-1">Integration Architect</h4>
+                                <p class="text-xs text-slate-500 mb-3">Advanced patterns: Canvas, Outbound Messaging, Platform Events, and OAuth.</p>
+                                <a href="#" class="text-sm font-semibold text-sfblue">Access Deck &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Matrix -->
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Role Required Certs</h3>
+                        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                            <div class="p-3 border-b border-slate-100 bg-slate-50">
+                                <h4 class="text-sm font-bold text-slate-800">Associate Developer</h4>
+                                <p class="text-xs text-slate-500">Admin, Platform App Builder</p>
+                            </div>
+                            <div class="p-3 border-b border-slate-100 bg-white">
+                                <h4 class="text-sm font-bold text-slate-800">Senior Developer</h4>
+                                <p class="text-xs text-slate-500">PD I, PD II, JS Developer I</p>
+                            </div>
+                            <div class="p-3 border-b border-slate-100 bg-slate-50">
+                                <h4 class="text-sm font-bold text-slate-800">Technical Lead</h4>
+                                <p class="text-xs text-slate-500">Data Cloud, Integration Arch</p>
+                            </div>
+                            <div class="p-3 bg-white">
+                                <h4 class="text-sm font-bold text-slate-800">Principal Architect</h4>
+                                <p class="text-xs text-slate-500">System Arch, Application Arch</p>
+                            </div>
+                        </div>
+                        <button class="w-full mt-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 rounded-lg text-sm transition-colors border border-slate-200">Request Exam Voucher</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: DEVOPS & MIGRATIONS -->
+            <div id="view-devops" class="view-section hidden view-transition">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-rose-100 p-2 rounded text-rose-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-800">DevOps Operations & Migrations</h2>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2">CI/CD Release Strategy (Copado/Gearset)</h3>
+                    <p class="text-sm text-slate-600 mb-6">All development must follow the standard PH GTM Branching Strategy. Direct commits to Staging or Production are strictly forbidden and will flag an audit violation.</p>
+                    
+                    <div class="flex flex-col md:flex-row items-center gap-4 text-center">
+                        <div class="flex-1 border border-slate-200 rounded-lg p-4 bg-slate-50 w-full">
+                            <div class="text-xs font-bold text-slate-500 mb-1">Feature Branch</div>
+                            <div class="font-semibold text-sfblue">Dev Sandbox</div>
+                        </div>
+                        <div class="hidden md:block text-slate-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                        <div class="flex-1 border border-slate-200 rounded-lg p-4 bg-slate-50 w-full relative">
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-200">PR Review Required</div>
+                            <div class="text-xs font-bold text-slate-500 mb-1">Integration Branch</div>
+                            <div class="font-semibold text-purple-600">SIT / QA Sandbox</div>
+                        </div>
+                        <div class="hidden md:block text-slate-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div>
+                        <div class="flex-1 border border-emerald-200 rounded-lg p-4 bg-emerald-50 w-full relative">
+                            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">UAT Sign-off</div>
+                            <div class="text-xs font-bold text-emerald-700 mb-1">Main Branch</div>
+                            <div class="font-bold text-emerald-800">Production</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Standard Migration Playbooks</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div>
+                            <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                                CPQ Metadata & Data Migration
+                            </h4>
+                            <p class="text-sm text-slate-500 mb-4">Order of operations for deploying Price Rules, Product Rules, and migrating active Quotes without breaking references. Includes Prodly/Gearset templates.</p>
+                        </div>
+                        <button class="text-sm font-semibold text-sfblue text-left hover:underline">View Confluence Playbook</button>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div>
+                            <h4 class="font-bold text-slate-800 flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                Large Data Volume (LDV) Loads
+                            </h4>
+                            <p class="text-sm text-slate-500 mb-4">Best practices for Bulk API 2.0, deferred sharing calculations, and disabling triggers/flows during massive inserts.</p>
+                        </div>
+                        <button class="text-sm font-semibold text-sfblue text-left hover:underline">View Confluence Playbook</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: MENTORSHIP -->
+            <div id="view-mentorship" class="view-section hidden view-transition">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-purple-100 p-2 rounded text-purple-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-slate-800">PH Mentorship & Coaching</h2>
+                </div>
+
+                <div class="bg-gradient-to-r from-purple-900 to-indigo-800 rounded-xl p-6 text-white mb-8 shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">Elevate Your Career with Peer Coaching</h3>
+                    <p class="text-indigo-100 text-sm mb-4 max-w-2xl">Connect with Principal Architects and Tech Leads for 1:1 code reviews, career pathing, or architecture whiteboard sessions. Our goal is to build the strongest CoE in the region.</p>
+                    <button class="bg-white text-purple-900 px-5 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-50 transition-colors">Request a Mentor Match</button>
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-800 mb-4">Available Technical Coaches</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Coach 1 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-inner">
+                            JD
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">Jane Doe</h4>
+                            <p class="text-xs text-sfblue font-semibold mb-2">Director, Architecture</p>
+                            <p class="text-sm text-slate-500 mb-3">Specializes in multi-cloud architecture, Data Cloud, and Enterprise Integration patterns.</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-[10px] rounded font-bold uppercase">System Arch</span>
+                                <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-[10px] rounded font-bold uppercase">Data Cloud</span>
+                            </div>
+                        </div>
+                        <button class="ml-auto text-slate-400 hover:text-purple-600 p-2" title="Book Time">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </button>
+                    </div>
+                    <!-- Coach 2 -->
+                    <div class="bg-white border border-slate-200 rounded-xl p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xl font-bold shrink-0 shadow-inner">
+                            MC
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">Mark Cruz</h4>
+                            <p class="text-xs text-sfblue font-semibold mb-2">Principal LWC Developer</p>
+                            <p class="text-sm text-slate-500 mb-3">Expert in custom UI/UX, advanced Lightning Web Components, and Jest testing frameworks.</p>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-[10px] rounded font-bold uppercase">LWC</span>
+                                <span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-[10px] rounded font-bold uppercase">JavaScript</span>
+                            </div>
+                        </div>
+                        <button class="ml-auto text-slate-400 hover:text-purple-600 p-2" title="Book Time">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <aside class="w-full lg:w-[420px] bg-white border-l border-slate-200 shadow-[0_0_15px_rgba(0,0,0,0.03)] flex flex-col z-20 h-full overflow-hidden shrink-0">
+            <div class="hidden print-header text-center">Resource Utilization Report</div>
+            
+            <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between shrink-0 no-print">
+                <div class="flex items-center gap-3">
+                    <div class="p-1.5 bg-sfblue text-white rounded shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-800">Daily Timesheet</h2>
+                </div>
+                <!-- Export / Print Buttons -->
+                <div class="flex gap-2">
+                    <button onclick="exportToCSV()" title="Export to CSV" class="p-1.5 text-slate-500 hover:text-sfblue hover:bg-blue-50 rounded transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
+                    <button onclick="window.print()" title="Print Report" class="p-1.5 text-slate-500 hover:text-sfblue hover:bg-blue-50 rounded transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-5 overflow-y-auto no-scrollbar flex-1">
+                
+                <!-- Weekly Distribution Widget -->
+                <div class="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-200">
+                    <div class="flex justify-between items-end mb-4">
+                        <div>
+                            <span class="text-sm text-slate-500 font-medium">This Week</span>
+                            <div class="text-2xl font-bold text-slate-800"><span id="hours-display">0.0</span> <span class="text-sm font-normal text-slate-500">/ 40 hrs</span></div>
+                        </div>
+                        <div class="text-xs font-bold px-2 py-1 bg-slate-200 text-slate-600 rounded-full" id="status-badge">
+                            Needs Entry
+                        </div>
+                    </div>
+                    
+                    <!-- Week Days Visualization -->
+                    <div class="flex justify-between text-xs text-center border-t border-slate-200 pt-3">
+                        <div class="flex flex-col"><span class="text-slate-400 mb-1">M</span><span id="day-1" class="font-bold text-slate-800">0.0</span></div>
+                        <div class="flex flex-col"><span class="text-slate-400 mb-1">T</span><span id="day-2" class="font-bold text-slate-800">0.0</span></div>
+                        <div class="flex flex-col"><span class="text-slate-400 mb-1">W</span><span id="day-3" class="font-bold text-slate-800">0.0</span></div>
+                        <div class="flex flex-col"><span class="text-slate-400 mb-1">T</span><span id="day-4" class="font-bold text-slate-800">0.0</span></div>
+                        <div class="flex flex-col"><span class="text-slate-400 mb-1">F</span><span id="day-5" class="font-bold text-slate-800">0.0</span></div>
+                    </div>
+                </div>
+
+                <!-- Form to Log Time -->
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-6 no-print">
+                    <h3 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Log Daily Activity</h3>
+                    
+                    <div id="success-msg" class="hidden mb-4 bg-green-50 text-green-700 p-2 rounded-md text-xs font-medium border border-green-200 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Activity logged successfully!
+                    </div>
+
+                    <form id="log-form" onsubmit="handleLogTime(event)">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Date</label>
+                                <input type="date" id="date-input" required class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sfblue focus:border-transparent bg-slate-50">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Project / Initiative</label>
+                                <select id="project-input" required class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sfblue focus:border-transparent bg-slate-50">
+                                    <option value="" disabled selected>Select a project...</option>
+                                    <option value="Liberty">Liberty</option>
+                                    <option value="NUS Track 3">NUS Track 3</option>
+                                    <option value="NUS Track 1">NUS Track 1</option>
+                                    <option value="NUS BBCRM">NUS BBCRM</option>
+                                    <option value="VCB">VCB</option>
+                                    <option value="CoE Practice / Upskilling">CoE Practice / Upskilling</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
+                                    <select id="category-input" required class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sfblue focus:border-transparent bg-slate-50">
+                                        <option value="Apex/LWC Dev">Apex/LWC Dev</option>
+                                        <option value="Architecture/Design">Architecture/Design</option>
+                                        <option value="QA / Testing">QA / Testing</option>
+                                        <option value="Meetings/Admin">Meetings/Admin</option>
+                                    </select>
+                                </div>
+                                <div class="w-1/3">
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Hours</label>
+                                    <input type="number" id="hours-input" required min="0.5" step="0.5" placeholder="0.0" class="w-full text-sm border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sfblue focus:border-transparent bg-slate-50">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-sfnavy hover:bg-slate-800 text-white font-semibold py-2 rounded-lg text-sm transition-colors shadow-sm mt-2 flex justify-center items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Add Entry
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex justify-between items-center">
+                        Logged Activities
+                    </h3>
+                    <div id="recent-logs" class="space-y-3">
+                        <!-- Entries will be injected here via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const targetHours = 40.0;
+        let logsData = [
+            { date: getFormattedDate(new Date(), -1), project: 'Liberty', category: 'Apex/LWC Dev', hours: 6.0 },
+            { date: getFormattedDate(new Date(), -1), project: 'CoE Practice / Upskilling', category: 'Meetings/Admin', hours: 2.0 },
+            { date: getFormattedDate(new Date(), -2), project: 'NUS Track 3', category: 'Architecture/Design', hours: 8.0 }
+        ];
+
+        // --- Initialization ---
+        window.onload = function() {
+            document.getElementById('date-input').value = getFormattedDate(new Date());
+            renderLogs();
+            updateDashboardStats();
+        };
+
+        // --- Tab Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all view sections
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+            });
+            
+            // Show target view section
+            const targetView = document.getElementById('view-' + tabId);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                // Retrigger animation
+                targetView.style.animation = 'none';
+                targetView.offsetHeight; /* trigger reflow */
+                targetView.style.animation = null; 
+            }
+
+            // Update nav styles
+            document.querySelectorAll('.nav-tab').forEach(el => {
+                el.classList.remove('text-sfblue', 'border-sfblue');
+                el.classList.add('border-transparent');
+            });
+            const activeTabBtn = document.getElementById('tab-' + tabId);
+            if (activeTabBtn) {
+                activeTabBtn.classList.remove('border-transparent');
+                activeTabBtn.classList.add('text-sfblue', 'border-sfblue');
+            }
+        }
+
+        // --- Utility Functions ---
+        function getFormattedDate(date, dayOffset = 0) {
+            const d = new Date(date);
+            d.setDate(d.getDate() + dayOffset);
+            let month = '' + (d.getMonth() + 1);
+            let day = '' + d.getDate();
+            let year = d.getFullYear();
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            return [year, month, day].join('-');
+        }
+
+        function getDayOfWeek(dateString) {
+            const date = new Date(dateString);
+            return date.getDay();
+        }
+
+        // --- Modal Logic ---
+        function toggleModal(modalID) {
+            const modal = document.getElementById(modalID);
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0', 'pointer-events-none');
+                    modal.children[0].classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modal.children[0].classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300); 
+            }
+        }
+
+        // --- Time Logging Logic ---
+        function handleLogTime(event) {
+            event.preventDefault();
+
+            const dateStr = document.getElementById('date-input').value;
+            const project = document.getElementById('project-input').value;
+            const category = document.getElementById('category-input').value;
+            const hours = parseFloat(document.getElementById('hours-input').value);
+
+            if (!dateStr || !project || isNaN(hours) || hours <= 0) return;
+
+            logsData.unshift({ date: dateStr, project: project, category: category, hours: hours });
+
+            renderLogs();
+            updateDashboardStats();
+
+            const successMsg = document.getElementById('success-msg');
+            successMsg.classList.remove('hidden');
+            
+            document.getElementById('project-input').selectedIndex = 0;
+            document.getElementById('hours-input').value = '';
+
+            setTimeout(() => { successMsg.classList.add('hidden'); }, 3000);
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('recent-logs');
+            container.innerHTML = ''; 
+
+            if(logsData.length === 0) {
+                container.innerHTML = '<div class="text-sm text-slate-500 italic text-center py-4">No entries logged yet.</div>';
+                return;
+            }
+
+            logsData.forEach((log, index) => {
+                const displayDate = new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                const html = `
+                    <div class="bg-white border border-slate-200 rounded-lg p-3 text-sm flex justify-between items-start print:border-b print:border-slate-300 print:rounded-none shadow-sm hover:shadow transition-shadow">
+                        <div>
+                            <div class="font-semibold text-slate-800 text-xs mb-0.5">${log.project}</div>
+                            <div class="text-slate-500 text-xs flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                ${displayDate} • ${log.category}
+                            </div>
+                        </div>
+                        <div class="font-bold text-sfnavy bg-slate-100 px-2 py-0.5 border border-slate-200 rounded text-xs print:bg-transparent print:border-none">
+                            ${log.hours.toFixed(1)} hrs
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function updateDashboardStats() {
+            let totalHours = 0;
+            let dailyTotals = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+            logsData.forEach(log => {
+                totalHours += log.hours;
+                const dayNum = getDayOfWeek(log.date);
+                if(dayNum >= 1 && dayNum <= 5) {
+                    dailyTotals[dayNum] += log.hours;
+                }
+            });
+
+            document.getElementById('hours-display').innerText = totalHours.toFixed(1);
+            
+            document.getElementById('profile-hours').innerText = totalHours.toFixed(1);
+            const profileProg = document.getElementById('profile-progress');
+            const percent = Math.min((totalHours / targetHours) * 100, 100);
+            profileProg.style.width = `${percent}%`;
+
+            for(let i=1; i<=5; i++) {
+                const el = document.getElementById(`day-${i}`);
+                el.innerText = dailyTotals[i].toFixed(1);
+                if(dailyTotals[i] >= 8.0) {
+                    el.classList.remove('text-slate-800', 'text-sfblue');
+                    el.classList.add('text-green-600');
+                } else if (dailyTotals[i] > 0) {
+                    el.classList.remove('text-slate-800', 'text-green-600');
+                    el.classList.add('text-sfblue');
+                } else {
+                    el.classList.remove('text-green-600', 'text-sfblue');
+                    el.classList.add('text-slate-800');
+                }
+            }
+
+            const mainBadge = document.getElementById('status-badge');
+            const profileBadge = document.getElementById('profile-status');
+            
+            if (totalHours >= targetHours) {
+                mainBadge.innerText = 'Target Met!';
+                mainBadge.className = 'text-xs font-bold px-2 py-1 bg-green-100 text-green-700 rounded-full';
+                profileBadge.innerText = 'Target Met!';
+                profileBadge.className = 'text-xs font-bold px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded-full shadow-sm';
+                profileProg.className = 'h-full bg-green-500 w-[80%] rounded-full progress-bar-transition';
+            } else if (totalHours > 0) {
+                mainBadge.innerText = 'On Track';
+                mainBadge.className = 'text-xs font-bold px-2 py-1 bg-blue-100 text-sfblue rounded-full';
+                profileProg.className = 'h-full bg-gradient-to-r from-sfblue to-cyan-400 w-[80%] rounded-full progress-bar-transition';
+            }
+        }
+
+        // --- Export Logic ---
+        function exportToCSV() {
+            if(logsData.length === 0) {
+                alert("No data to export.");
+                return;
+            }
+
+            let csvContent = "Date,Project,Category,Hours\n";
+            
+            logsData.forEach(row => {
+                let project = `"${row.project}"`;
+                let category = `"${row.category}"`;
+                csvContent += `${row.date},${project},${category},${row.hours}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Utilization_Export_${getFormattedDate(new Date())}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
